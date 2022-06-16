@@ -2,6 +2,9 @@ import sqlite3
 import os
 import platform
 import urllib.request
+import readchar
+
+
 urllib.request.urlretrieve(
     'http://www1.pu.edu.tw/~yrjean/Sqlite01.txt', 'Sqlite01.sqlite')
 
@@ -38,12 +41,23 @@ def add():
                 "SELECT * FROM password WHERE name = ?", (name,)).fetchone()
             if(row == None):
                 pas = ''
-                while(pas == ''):
-                    pas = input("請輸入密碼:")
+                repeatpas = ''
+                repeatpascheck = False
+                while(repeatpascheck == False):
+                    pas = input("請輸入新密碼:")
+                    if(pas != ''):
+                        repeatpas = input("請再次輸入新密碼:")
+                        while(pas != repeatpas):
+                            print("密碼不相同，重新輸入")
+                            repeatpas = input("請再次輸入新密碼:")
+                        repeatpascheck = True
+
                 cur.execute(
                     "INSERT into password values(?,?)", (name, pas))
                 con.commit()
-                input("帳號新增完畢,請按 ENTER 返回主選單")
+                print("帳號新增完畢,請按任意鍵返回主選單")
+                readchar.readchar()
+
                 return
 
             else:
@@ -58,7 +72,11 @@ def show():
     for row in rows:
         print("{}\t{}".format(row[0], row[1]))
     print("--------------")
-    input("按 ENTER 返回主選單")
+    print("按任意鍵返回主選單")
+    readchar.readchar()
+
+
+
 
 
 def edit():
@@ -70,13 +88,31 @@ def edit():
             row = cur.execute(
                 "SELECT * FROM password WHERE name = ?", (name,)).fetchone()
             if(row != None):
-                print("原來密碼為:"+row[1])
-                newpas = input("請輸入新密碼:")
-                cur.execute(
-                    "UPDATE password set pass=? where name=?", (newpas, name))
-                con.commit()
-                input("密碼更改完畢,請按 ENTER 返回主選單")
-                return
+                oldpas = input("請輸入原密碼:")
+                if(row[1]!=oldpas):
+                    print("密碼錯誤，無法修改")
+                else:
+                    
+                    pas = ''
+                    repeatpas = ''
+                    repeatpascheck = False
+                    while(repeatpascheck == False):
+                        pas = input("請輸入新密碼:")
+                        if(pas != ''):
+                            repeatpas = input("請再次輸入新密碼:")
+                            while(pas != repeatpas):
+                                print("密碼不相同，重新輸入")
+                                repeatpas = input("請再次輸入新密碼:")
+                            repeatpascheck = True
+
+
+                    cur.execute(
+                        "UPDATE password set pass=? where name=?", (pas, name))
+                    con.commit()
+                    
+                    print("密碼更改完畢,請按任意鍵返回主選單")
+                    readchar.readchar()
+                    return
 
             else:
                 print(name+" 帳號不存在!")
@@ -91,13 +127,18 @@ def delete():
             row = cur.execute(
                 "SELECT * FROM password WHERE name = ?", (name,)).fetchone()
             if(row != None):
-                ans = input("確定刪除"+name+"的資料(Y/N)?")
-                if(ans == 'y' or ans == 'Y'):
-                    cur.execute(
-                        "Delete From password WHERE name=?", (name,))
-                    con.commit()
-                    input("帳號刪除完畢,請按 ENTER 返回主選單")
-                    return
+                oldpas = input("請輸入原密碼:")
+                if(row[1]!=oldpas):
+                    print("密碼錯誤，無法刪除")
+                else:
+                    ans = input("確定刪除"+name+"的資料(Y/N)?")
+                    if(ans == 'y' or ans == 'Y'):
+                        cur.execute(
+                            "Delete From password WHERE name=?", (name,))
+                        con.commit()
+                        print("帳號刪除完畢,請按任意鍵返回主選單")
+                        readchar.readchar()
+                        return
             else:
                 print(name+"帳號不存在!")
 
